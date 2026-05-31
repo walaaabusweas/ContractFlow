@@ -1,0 +1,53 @@
+services:
+  app:
+    build: .
+    container_name: contractflow_app
+    restart: always
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8090:8000"
+    environment:
+      - CHROMA_SERVER_HOST=chromadb
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      - chromadb
+      - redis
+  gradio:
+    build: .
+    container_name: contractflow_gradio
+    restart: always
+    command: python app.py
+    ports:
+      - "7860:7860"
+    volumes:
+      - .:/app
+    environment:
+      - CHROMA_SERVER_HOST=chromadb
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - chromadb
+      - redis
+
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: contractflow_chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+  redis:
+    image: redis:7-alpine
+    container_name: contractflow_redis
+    restart: always
+    ports:
+      - "6399:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  chroma_data:
+  redis_data:
