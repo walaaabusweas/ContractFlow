@@ -3,6 +3,7 @@ import os
 import re
 from graphs.state_schema import AgentState
 from graphs.nodes.qwen_client import qwen_chat_completion
+from utils.decorators import track_tokens
 
 
 def prepare_custom_clauses_node(state: AgentState) -> AgentState:
@@ -34,7 +35,7 @@ def prepare_custom_clauses_node(state: AgentState) -> AgentState:
         state.history.append(f"Custom clauses prepared: {len(state.temp_custom_checklist)}")
     return state
 
-
+@track_tokens("normalize_custom_checklist")
 def normalize_custom_checklist(custom_json: dict) -> dict:
     normalized = {}
     for key, value in (custom_json or {}).items():

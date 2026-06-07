@@ -4,7 +4,9 @@ import re
 from pypdf import PdfReader
 
 from graphs.state_schema import AgentState, ContractData
+from utils.decorators import track_tokens
 
+@track_tokens("pdf_reader_node")
 def pdf_reader_node(state: AgentState)-> AgentState:
     """
     Zero Node: Converting a PDF file to Raw Text.

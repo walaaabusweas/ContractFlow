@@ -8,6 +8,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from graphs.state_schema import AgentState
 from config.ChromaManager import ChromaManager
 from graphs.nodes.qwen_client import get_embedding, qwen_chat_completion 
+from utils.decorators import track_tokens,record_model_usage
+
 
 co = cohere.Client(api_key=os.getenv("COHERE_API_KEY"))
 CACHE_FILE = "rerank_cache.json"
@@ -79,6 +81,8 @@ def embed_chunks(chunks_texts: List[str]) -> List[List[float]]:
     return [get_embedding(text) for text in chunks_texts]
 
 def embed_query(question: str):
+    tokens = len(question.split()) # أو استخدام tiktoken للدقة
+    record_model_usage(input_tokens=tokens, output_tokens=0)
     return get_embedding(question)
 
 def get_retrieval_strategy(field: str):
@@ -106,7 +110,14 @@ def get_best_reranked_doc(question: str, documents: list[str]) -> str:
     time.sleep(1)
     
     reranked = co.rerank(query=question, documents=documents, top_n=1, model="rerank-multilingual-v3.0")
-    
+    # داخل دالة get_best_reranked_doc
+    if hasattr(reranked, 'meta') and reranked.meta.billed_units:
+        # سجل استهلاك Cohere كـ input_tokens
+        record_model_usage(
+            input_tokens=reranked.meta.billed_units.input_tokens,
+            output_tokens=0
+        )
+
     if not reranked or not reranked.results: 
         return ""
     
@@ -132,33 +143,35 @@ def get_best_reranked_doc(question: str, documents: list[str]) -> str:
     return best_doc_text
 
 
-def ingest_node(state: AgentState) -> AgentState:
-    print("--- [NODE] STARTING SMART INGESTION ---")
-    contract_id = generate_contract_id(state.contract_text)
-    extracted_parties = get_parties_fallback(state.contract_text)
+# def ingest_node(state: AgentState) -> AgentState:
+#     print("--- [NODE] STARTING SMART INGESTION ---")
+#     contract_id = generate_contract_id(state.contract_text)
+#     extracted_parties = get_parties_fallback(state.contract_text)
     
-    chunks = parse_and_build_chunks(state.contract_text)
-    texts = [chunk["content"] for chunk in chunks]
-    embeddings = embed_chunks(texts)
+#     chunks = parse_and_build_chunks(state.contract_text)
+#     texts = [chunk["content"] for chunk in chunks]
+#     embeddings = embed_chunks(texts)
     
-    collection = get_collection()
-    chunk_ids = [f"{contract_id}_chunk_{i}" for i in range(len(texts))]
+#     collection = get_collection()
+#     chunk_ids = [f"{contract_id}_chunk_{i}" for i in range(len(texts))]
     
-    collection.upsert(
-        documents=texts,
-        embeddings=embeddings,
-        metadatas=[{"section": c["section"], "lang": state.contract_language, 
-                    "contract_id": contract_id, "parties": extracted_parties} for c in chunks],
-        ids=chunk_ids
-    )
+#     collection.upsert(
+#         documents=texts,
+#         embeddings=embeddings,
+#         metadatas=[{"section": c["section"], "lang": state.contract_language, 
+#                     "contract_id": contract_id, "parties": extracted_parties} for c in chunks],
+#         ids=chunk_ids
+#     )
 
-    state.update({
-        "contract_id": contract_id,
-        "history": state.history + [f"Ingestion Complete: {contract_id}"],
-        "parties": extracted_parties
-    })
-    return state
+#     state.update({
+#         "contract_id": contract_id,
+#         "history": state.history + [f"Ingestion Complete: {contract_id}"],
+#         "parties": extracted_parties
+#     })
+#     return state
 
+
+@track_tokens("retrieve_node")
 def retrieve_node(state: AgentState) -> AgentState:
     print("--- [NODE] MULTI-QUERY RETRIEVING WITH METADATA FILTERING ---")
     collection = get_collection()

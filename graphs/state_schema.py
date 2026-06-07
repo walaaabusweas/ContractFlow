@@ -34,6 +34,7 @@ class AgentState:
     risks: List[Dict[str, Any]] = field(default_factory=list)
     final_report: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
+    token_usage: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         """تحويل الـ State كاملاً إلى قاموس (مفيد للـ FastAPI)"""

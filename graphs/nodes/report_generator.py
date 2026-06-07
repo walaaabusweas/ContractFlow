@@ -3,11 +3,14 @@ import traceback
 from graphs.state_schema import AgentState
 from graphs.nodes.qwen_client import qwen_chat_completion, get_embedding
 from config.ChromaManager import ChromaManager
+from utils.decorators import track_tokens
 
 def get_collection():
     """الوصول لقاعدة البيانات الثابتة"""
     return ChromaManager().get_collection()
 
+
+@track_tokens("report_generator_node")
 def report_generator_node(state: AgentState) -> AgentState:
     print("\n--- [NODE] EXECUTING ADVANCED COMPLIANCE & LEGAL REPORT GENERATOR ---", flush=True)
     

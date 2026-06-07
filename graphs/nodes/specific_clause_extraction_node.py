@@ -6,6 +6,7 @@ from graphs.state_schema import AgentState, ContractData
 from graphs.nodes.qwen_client import qwen_chat_completion
 from config.ChromaManager import ChromaManager
 from graphs.nodes.qwen_client import get_embedding
+from utils.decorators import track_tokens
 
 def embed_query(question: str):
     return get_embedding("query: " + question)
@@ -13,6 +14,7 @@ def embed_query(question: str):
 def get_collection():
     return ChromaManager().get_collection()
 
+@track_tokens("risk_analyzer_node")
 def specific_clause_extraction_node(state: AgentState) -> AgentState:
     print(f"--- [NODE] EXECUTING SPECIFIC CLAUSE EXTRACTION: {state.contract_id} ---", flush=True)
     

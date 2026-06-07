@@ -1,8 +1,9 @@
 import unicodedata
 import re
 from graphs.state_schema import AgentState
+from utils.decorators import track_tokens
 
-
+@track_tokens("normalize_arabic_text_node")
 def normalize_arabic_text_node(state: AgentState)-> AgentState:
     """
     تقوم هذه الدالة بمعايرة النصوص العربية المستخرجة من الـ OCR 

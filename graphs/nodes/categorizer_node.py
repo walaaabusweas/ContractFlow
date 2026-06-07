@@ -5,11 +5,12 @@ from typing import Any
 from dotenv import load_dotenv
 
 from graphs.nodes.qwen_client import qwen_chat_completion
+from utils.decorators import track_tokens
 
 load_dotenv()
 load_dotenv(Path(__file__).resolve().parents[2] / "config" / ".env")
 
-
+@track_tokens("categorize_contract_node")
 async def categorize_contract_node(state: Any): 
     """
     Node: Categorizer

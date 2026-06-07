@@ -75,6 +75,7 @@ def format_result_sections(api_response):
     legal_notes = final_report.get("notes_for_legal_review") or []
     specific_clauses = data.get("specific_clauses") or {}
     contract_type = final_report.get("contract_type") or api_response.get("contract_type", "غير محدد")
+    token_usage = api_response.get("token_usage", {})
 
     overview = f"""
 ### ملخص العقد
@@ -131,7 +132,7 @@ def format_result_sections(api_response):
 {_render_list(legal_notes, "لا توجد توصيات إضافية.")}
 """
 
-    return api_response, overview, extracted, clauses, missing_text, risks_text, legal_review
+    return api_response, overview, extracted, clauses, missing_text, risks_text, legal_review,token_usage
 
 def analyze_contract_ui(file_obj, custom_clauses_file=None):
     """دالة الاتصال بالـ API"""
@@ -202,6 +203,9 @@ with gr.Blocks(title="ContractFlow AI", css=custom_css, theme=gr.themes.Soft()) 
                     output_legal = gr.Markdown("انتظر النتيجة...")
                 with gr.TabItem("البيانات التقنية (JSON)"):
                     output_json = gr.JSON(label="الهيكل البرمجي")
+                # داخل معمارية Gradio (Blocks)
+                with gr.TabItem("استهلاك التوكنات"):
+                    output_tokens = gr.JSON(label="تفاصيل استهلاك التوكنات لكل نود")
 
     submit_btn.click(
         fn=analyze_contract_ui, 
@@ -214,6 +218,7 @@ with gr.Blocks(title="ContractFlow AI", css=custom_css, theme=gr.themes.Soft()) 
             output_missing,
             output_risks,
             output_legal,
+            output_tokens,
         ]
     )
 

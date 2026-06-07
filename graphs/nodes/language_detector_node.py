@@ -1,6 +1,7 @@
 from graphs.state_schema import AgentState
+from utils.decorators import track_tokens
 
-
+@track_tokens("language_detector_node")
 def language_detector_node(state: AgentState) -> AgentState:
     """
     Detect the contract language from extracted text and store it in state.contract_language.

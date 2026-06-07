@@ -4,6 +4,7 @@ import re
 
 from graphs.nodes.qwen_client import qwen_chat_completion
 from graphs.state_schema import AgentState, ContractData
+from utils.decorators import track_tokens
 
 EXTRACTION_FIELDS = [
     "parties",
@@ -142,7 +143,7 @@ def _normalize_arabic_extraction(parsed: dict, state: AgentState) -> dict:
             normalized[key] = _normalize_arabic_value(normalized[key])
     return normalized
 
-
+@track_tokens("extraction_node")
 def extraction_node(state: AgentState) -> AgentState:
     print("--- [NODE] EXTRACTING STRUCTURED DATA VIA QWEN ---", flush=True)
 

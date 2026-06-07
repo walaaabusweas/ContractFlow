@@ -5,6 +5,7 @@ from typing import List
 from graphs.state_schema import AgentState
 from config.ChromaManager import ChromaManager
 from graphs.nodes.qwen_client import get_embedding,qwen_chat_completion # تأكد من استيراد دالة الموديل
+from utils.decorators import track_tokens
 
 def get_collection():
     return ChromaManager().get_collection()
@@ -140,6 +141,8 @@ def parse_and_build_chunks(text: str):
 def embed_chunks(chunks_texts: List[str]) -> List[List[float]]:
     return [get_embedding(text) for text in chunks_texts]
 
+
+@track_tokens("ingest_node")
 def ingest_node(state: AgentState) -> AgentState:
     print("--- [NODE] STARTING SMART INGESTION WITH STATIC PARTIES EXTRACTION ---")
 

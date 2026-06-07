@@ -4,11 +4,13 @@ from typing import List, Dict, Any
 from graphs.state_schema import AgentState, ContractData
 from config.ChromaManager import ChromaManager
 from graphs.nodes.qwen_client import get_embedding, qwen_chat_completion
+from utils.decorators import track_tokens
 
 def get_collection():
     """الوصول للـ Collection الثابتة عبر الـ Singleton"""
     return ChromaManager().get_collection()
 
+@track_tokens("detect_missing_clauses_node")
 def detect_missing_clauses_node(state: AgentState) -> AgentState:
     """
     نود تدقيق الامتثال النهائي باستخدام الـ RAG:

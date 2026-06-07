@@ -23,7 +23,7 @@ class ChromaManager:
             cls._client = chromadb.HttpClient(host=host, port=port)
         return cls._instance
 
-    def get_collection(self):
+    def get_collection(self, name="contracts"):
         if self._collection is None:
-            self._collection = self._client.get_or_create_collection(name="new_contracts_collection")
+            self._collection = self._client.get_or_create_collection(name="new_contracts_collection20")
         return self._collection

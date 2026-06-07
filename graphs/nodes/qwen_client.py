@@ -3,72 +3,68 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
-import dashscope
-from dashscope import TextEmbedding # تأكدي من تثبيت مكتبة dashscope
 
 # تحميل ملفات البيئة والإعدادات
 load_dotenv()
 load_dotenv(Path(__file__).resolve().parents[2] / "config" / ".env")
 
-# الموديل الافتراضي الجديد لـ DashScope
-DEFAULT_QWEN_MODEL = "qwen2.5-72b-instruct"
-DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+# # الموديل الافتراضي الجديد لـ DashScope
+# DEFAULT_QWEN_MODEL = "qwen2.5-72b-instruct"
+# DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 
-api_key = os.getenv("DASHSCOPE_API_KEY")
-if api_key:
-    dashscope.api_key = api_key
-else:
-    print("⚠️ WARNING: DASHSCOPE_API_KEY not found in environment variables!")
+# api_key = os.getenv("DASHSCOPE_API_KEY")
+# if api_key:
+#     dashscope.api_key = api_key
+# else:
+#     print("⚠️ WARNING: DASHSCOPE_API_KEY not found in environment variables!")
 
-def qwen_chat_completion(
-    messages: List[Dict[str, str]],
-    *,
-    temperature: float = 0,
-    max_tokens: int = 2500,
-    response_format: Optional[Dict[str, Any]] = None,
-) -> str:
-    """
-     الفانكش   مدعومة بـ OpenAI Client 
-    ومتصلة مباشرة بـ Alibaba DashScope لتشغيل موديلات Qwen باستقرار كامل.
-    """
-    # جلب مفتاح الـ API والـ Model من الـ .env
-    model_name = os.getenv("QWEN_MODEL_NAME", DEFAULT_QWEN_MODEL)
-    base_url = os.getenv("DASHSCOPE_BASE_URL", DEFAULT_BASE_URL)
 
-    if not dashscope.api_key:
-        raise RuntimeError(
-            "DASHSCOPE_API_KEY is missing from your .env file. "
-            "Please add it to run Qwen via Alibaba Cloud."
-        )
+# def qwen_chat_completion(
+#     messages: List[Dict[str, str]],
+#     *,
+#     temperature: float = 0,
+#     max_tokens: int = 2500,
+#     response_format: Optional[Dict[str, Any]] = None,
+# ) -> str:
+#     """
+#     دالة موحدة لاستدعاء موديلات OpenAI (مثل gpt-4o).
+#     """
+#     # جلب مفتاح الـ API والـ Model من الـ .env
+#     # تأكد من تسمية المتغير في ملف .env بـ OPENAI_API_KEY
+#     api_key = os.getenv("OPENAI_API_KEY")
+#     model_name = os.getenv("OPENAI_MODEL_NAME", "gpt-4o")
 
-    # تهيئة الـ Client المتوافق مع OpenAI
-    client = OpenAI(
-        api_key=api_key,
-        base_url=base_url
-    )
+#     if not api_key:
+#         raise RuntimeError(
+#             "OPENAI_API_KEY is missing from your .env file."
+#         )
 
-    # تجهيز المعاملات الديناميكية الممررة من الـ Nodes
-    kwargs = {
-        "model": model_name,
-        "messages": messages,
-        "temperature": temperature,
-        "max_tokens": max_tokens,
-    }
+#     # تهيئة الـ Client الخاص بـ OpenAI
+#     client = OpenAI(api_key=api_key)
 
-    # دعم صيغة الـ JSON الممررة من نود الاستخراج
-    if response_format is not None:
-        kwargs["response_format"] = response_format
+#     # تجهيز المعاملات
+#     kwargs = {
+#         "model": model_name,
+#         "messages": messages,
+#         "temperature": temperature,
+#         "max_tokens": max_tokens,
+#     }
 
-    try:
-        # استدعاء الموديل عبر الـ Chat Completion الموحد
-        response = client.chat.completions.create(**kwargs)
+#     # دعم صيغة الـ JSON (مهم جداً لنودز الاستخراج)
+#     if response_format is not None:
+#         kwargs["response_format"] = response_format
+
+#     try:
+#         # استدعاء الموديل
+#         response = client.chat.completions.create(**kwargs)
         
-        # إرجاع النص الصافي مباشرة كما تتوقعه النودز السابقة
-        return response.choices[0].message.content.strip()
+#         # إرجاع النص
+#         return response.choices[0].message.content.strip()
         
-    except Exception as e:
-        print(f"❌ Error during DashScope Qwen Inference: {e}")
-        raise RuntimeError(f"Qwen API Execution failed: {str(e)}") from e
+#     except Exception as e:
+#         print(f"❌ Error during OpenAI Inference: {e}")
+#         raise RuntimeError(f"OpenAI API Execution failed: {str(e)}") from e
+    
     
 
 # from http import HTTPStatus, client
@@ -111,32 +107,148 @@ def qwen_chat_completion(
 #     except Exception as e:
 #         raise RuntimeError(f"Request failed: {str(e)}")
 
+
+
+# def qwen_chat_completion(
+#     messages: List[Dict[str, str]],
+#     *,
+#     temperature: float = 0,
+#     max_tokens: int = 2500,
+#     response_format: Optional[Dict[str, Any]] = None,
+# ) -> str:
+#     """
+#     دالة موحدة لاستدعاء موديلات OpenAI (مثل gpt-4o).
+#     """
+#     # جلب مفتاح الـ API والـ Model من الـ .env
+#     # تأكد من تسمية المتغير في ملف .env بـ OPENAI_API_KEY
+#     api_key = os.getenv("OPENAI_API_KEY")
+#     model_name = os.getenv("OPENAI_MODEL_NAME", "gpt-4o")
+
+#     if not api_key:
+#         raise RuntimeError(
+#             "OPENAI_API_KEY is missing from your .env file."
+#         )
+
+#     # تهيئة الـ Client الخاص بـ OpenAI
+#     client = OpenAI(api_key=api_key)
+
+#     # تجهيز المعاملات
+#     kwargs = {
+#         "model": model_name,
+#         "messages": messages,
+#         "temperature": temperature,
+#         "max_tokens": max_tokens,
+#     }
+
+#     # دعم صيغة الـ JSON (مهم جداً لنودز الاستخراج)
+#     if response_format is not None:
+#         kwargs["response_format"] = response_format
+
+#     try:
+#         # استدعاء الموديل
+#         response = client.chat.completions.create(**kwargs)
+        
+#         # إرجاع النص
+#         return response.choices[0].message.content.strip()
+        
+#     except Exception as e:
+#         print(f"❌ Error during OpenAI Inference: {e}")
+#         raise RuntimeError(f"OpenAI API Execution failed: {str(e)}") from e
+    
 import os
 from typing import List
 from openai import OpenAI
 from dotenv import load_dotenv
 
+from huggingface_hub import InferenceClient
+import os
+
+# تهيئة العميل (يستخدم الـ Token الخاص بك)
+client = InferenceClient(api_key=os.getenv("HF_TOKEN"))
 
 def get_embedding(text: str) -> List[float]:
     """
-    استخدام OpenAI API للقيام بالـ Embedding.
-    هذا الكود يعتمد على OPENAI_API_KEY الموجود في ملف الـ .env
+    استخدام الـ API الخاص بـ Hugging Face لعمل Embedding
+    (لا يستهلك موارد جهازك).
     """
-    
     try:
-        # تهيئة الكلاينت الخاص بـ OpenAI
-        # تأكدي أن OPENAI_API_KEY موجود في ملف .env
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # يمكنك تغيير الموديل لأي موديل Embedding متوفر على HF
+        response = client.feature_extraction(
+            model="BAAI/bge-m3",
+            text=text
+        )
+        # response يكون عادة numpy array أو list
+        return response.tolist()
+    except Exception as e:
+        print(f"❌ Error during HF API Embedding: {e}")
+        raise RuntimeError(f"Embedding failed: {str(e)}")
+
+    # def get_embedding(text: str) -> List[float]:
+    #     """
+    #     استخدام OpenAI API للقيام بالـ Embedding.
+    #     هذا الكود يعتمد على OPENAI_API_KEY الموجود في ملف الـ .env
+    #     """
+    
+#     try:
+#         # تهيئة الكلاينت الخاص بـ OpenAI
+#         # تأكدي أن OPENAI_API_KEY موجود في ملف .env
+#         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         
-        # استدعاء موديل الـ Embedding (أرخص وأسرع موديل هو text-embedding-3-small)
-        response = client.embeddings.create(
-            input=text,
-            model="text-embedding-3-small"
+#         # استدعاء موديل الـ Embedding (أرخص وأسرع موديل هو text-embedding-3-small)
+#         response = client.embeddings.create(
+#             input=text,
+#             model="text-embedding-3-small"
+#         )
+        
+#         # استرجاع الـ Vector
+#         return response.data[0].embedding
+        
+#     except Exception as e:
+#         print(f"❌ Error during OpenAI Embedding: {e}")
+#         raise RuntimeError(f"Embedding failed: {str(e)}")
+
+
+import os
+from typing import List, Dict, Any, Optional
+from huggingface_hub import InferenceClient
+
+from utils.decorators import record_model_usage # تأكد من استيرادها من ملف الـ decorators
+
+def qwen_chat_completion(
+    messages: List[Dict[str, str]],
+    *,
+    temperature: float = 0,
+    max_tokens: int = 2500,
+    response_format: Optional[Dict[str, Any]] = None,
+) -> str:
+    """
+    استدعاء موديل Qwen2.5-7B-Instruct عبر Hugging Face Inference API مع تتبع التوكنات.
+    """
+    api_key = os.getenv("HF_TOKEN")
+    model_name = "Qwen/Qwen2.5-7B-Instruct"
+
+    if not api_key:
+        raise RuntimeError("HF_TOKEN is missing from your .env file.")
+
+    client = InferenceClient(model=model_name, token=api_key)
+
+    try:
+        response = client.chat_completion(
+            messages=messages,
+            temperature=temperature if temperature > 0 else 0.1,
+            max_tokens=max_tokens,
+            stream=False
         )
         
-        # استرجاع الـ Vector
-        return response.data[0].embedding
+        # --- إضافة التعديل لتتبع التوكنات ---
+        if hasattr(response, 'usage') and response.usage:
+            record_model_usage(
+                input_tokens=response.usage.prompt_tokens,
+                output_tokens=response.usage.completion_tokens
+            )
+        
+        return response.choices[0].message.content.strip()
         
     except Exception as e:
-        print(f"❌ Error during OpenAI Embedding: {e}")
-        raise RuntimeError(f"Embedding failed: {str(e)}")
+        print(f"❌ Error during Hugging Face Inference: {e}")
+        raise RuntimeError(f"Hugging Face API Execution failed: {str(e)}") from e
