@@ -13,7 +13,7 @@ class ContractData:
     governing_law: Optional[str] = None
     dispute_resolution: Optional[str] = None
     specific_clauses: Dict[str, str] = field(default_factory=dict)
-    
+    renewal: Optional[str] = None
 
 @dataclass
 class AgentState:

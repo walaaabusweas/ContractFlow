@@ -37,9 +37,13 @@ def record_model_usage(
         return
 
     usage["llm_calls"] += 1
-    usage["llm_input_tokens"] += input_tokens
-    usage["llm_output_tokens"] += output_tokens
-    usage["llm_total_tokens"] += (input_tokens + output_tokens)
+    i_tokens = input_tokens if input_tokens is not None else 0
+    o_tokens = output_tokens if output_tokens is not None else 0
+    
+    # تحديث القيم بأمان
+    usage["llm_input_tokens"] = usage.get("llm_input_tokens", 0) + i_tokens
+    usage["llm_output_tokens"] = usage.get("llm_output_tokens", 0) + o_tokens
+    usage["llm_total_tokens"] = usage.get("llm_total_tokens", 0) + (i_tokens + o_tokens)
 
 def _add_token_usage(result: Any, node_name: str, usage: dict):
     if isinstance(result, dict):

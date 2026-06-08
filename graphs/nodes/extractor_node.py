@@ -6,6 +6,14 @@ from graphs.nodes.qwen_client import qwen_chat_completion
 from graphs.state_schema import AgentState, ContractData
 from utils.decorators import track_tokens
 
+import json
+import os
+import re
+
+from graphs.nodes.qwen_client import qwen_chat_completion
+from graphs.state_schema import AgentState, ContractData
+from utils.decorators import track_tokens
+
 EXTRACTION_FIELDS = [
     "parties",
     "value",
@@ -170,7 +178,7 @@ def extraction_node(state: AgentState) -> AgentState:
     6. Summaries must be short single sentences. Preserve all numbers, percentages, and deadlines.
     7. Write values in the same language as the contract.
     8. If any field is missing after thorough searching, return null.
-    9. For "parties", extract the two main entities signing the document.
+    9. For "parties", Extract the names of the contracting parties in the contract. For each party, specify its full business name (Entity Name) instead of just stating 'Party One' or 'Party Two'. If you do not find the company name, use the description mentioned in the contract."
     10. If "value" is not explicitly a contract price, look for liquidated damages or compensation and explain the context in "reasoning".
     """
 

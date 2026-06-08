@@ -87,6 +87,7 @@ def embed_query(question: str):
 
 def get_retrieval_strategy(field: str):
     strategy = {
+        "parties": "parties",
         "value": "value",
         "duration": "duration",
         "payment_terms": "payment_terms",
@@ -173,56 +174,46 @@ def get_best_reranked_doc(question: str, documents: list[str]) -> str:
 
 @track_tokens("retrieve_node")
 def retrieve_node(state: AgentState) -> AgentState:
-    print("--- [NODE] MULTI-QUERY RETRIEVING WITH METADATA FILTERING ---")
+    print("--- [NODE] RETRIEVING WITH SEMANTIC SEARCH & RERANKING ---")
     collection = get_collection()
-    all_search_variants = {
-        "value": ["What is the total contract value?"],
-        "duration": ["What is the duration?"],
-        "payment_terms": ["What are the payment terms?"],
-        "termination": ["What are the conditions for termination?"],
-        "liability": ["What is the liability cap?"],
-        "confidentiality": ["What are the confidentiality obligations?"],
-        "governing_law": ["What is the governing law?"],
-        "dispute_resolution": ["What is the dispute resolution protocol?"]
+    
+    # القائمة لا تزال تستخدم للبحث، لكننا لا نفلتر بها تقنياً
+    queries_to_fetch = {
+        "parties": "What are the full legal names of the contracting parties mentioned in the preamble?",
+        "value": "What is the total contract value?",
+        "duration": "What is the duration of the contract?",
+        "payment_terms": "What are the payment terms?",
+        "termination": "What are the conditions for contract termination?",
+        "liability": "What is the limitation of liability?",
+        "confidentiality": "What are the confidentiality obligations?",
+        "governing_law": "What is the governing law?",
+        "dispute_resolution": "What is the dispute resolution protocol?"
     }
     
     retrieved_data = {}
-    for field, queries in all_search_variants.items():
-        clause_type = get_retrieval_strategy(field)
-        
-        if clause_type:
-            filter_dict = {
-                "$and": [
-                    {"contract_id": state.contract_id},
-                    {"clause_type": clause_type}
-                ]
-            }
-        else:
-            filter_dict = {"contract_id": state.contract_id}
-
+    
+    # الفلتر الوحيد المطلوب هو الـ contract_id لضمان عدم خلط عقود مختلفة
+    filter_dict = {"contract_id": state.contract_id}
+    
+    for field, query_text in queries_to_fetch.items():
+        # البحث الدلالي المباشر (Vector Search)
         results = collection.query(
-            query_embeddings=[embed_query(queries[0])], 
-            n_results=3, 
+            query_embeddings=[embed_query(query_text)], 
+            n_results=5, # زيادة النتائج لتعزيز دقة الـ Reranker
             where=filter_dict
         )
         
         all_candidates = results.get("documents", [[]])[0]
         
-        if not all_candidates:
-            results_fallback = collection.query(
-                query_embeddings=[embed_query(queries[0])], 
-                n_results=3, 
-                where={"contract_id": state.contract_id}
-            )
-            all_candidates = results_fallback.get("documents", [[]])[0]
-            
-        best_doc = get_best_reranked_doc(queries[0], all_candidates)
-        retrieved_data[field] = best_doc if best_doc else (all_candidates[0] if all_candidates else "Not specified")
+        # استخدام Cohere Rerank لاختيار الأفضل دلالياً
+        # الـ Reranker سيقارن بين السؤال وبين نصوص الـ Markdown المسترجعة
+        best_doc = get_best_reranked_doc(query_text, all_candidates)
         
+        retrieved_data[field] = best_doc if best_doc else "Not specified"
         print(f"✅ Retrieved info for {field}")
 
     state.update({
         "retrieved_context": retrieved_data,
-        "history": state.history + ["Multi-Query Retrieval & Reranking completed"]
+        "history": state.history + ["Retrieval & Semantic Reranking completed"]
     })
     return state
