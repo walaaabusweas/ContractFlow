@@ -1,7 +1,14 @@
+version: '3.8'
+
 services:
   app:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    platform: linux/amd64
     container_name: contractflow_app
+    env_file:  
+      - .env
     restart: always
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
@@ -9,28 +16,33 @@ services:
     environment:
       - CHROMA_SERVER_HOST=chromadb
       - REDIS_URL=redis://redis:6379/0
-      - HF_TOKEN=${HF_TOKEN}
     volumes:
-      - .:/app
+      - ./backend:/app
+      - .:/var/task
     depends_on:
       - chromadb
       - redis
+
   gradio:
-    build: .
+    build: ./frontend
+    platform: linux/amd64
     container_name: contractflow_gradio
     restart: always
     command: python app.py
     ports:
       - "7860:7860"
     volumes:
-      - .:/app
+      - ./frontend:/app
     environment:
       - CHROMA_SERVER_HOST=chromadb
       - REDIS_URL=redis://redis:6379/0
+      - BACKEND_URL=http://app:8000/upload-contract
     depends_on:
       - chromadb
       - redis
-
+      - app
+    env_file:
+      - .env
 
   chromadb:
     image: chromadb/chroma:latest

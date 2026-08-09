@@ -1,0 +1,9 @@
+[project]
+name = "contractflow-frontend"
+version = "0.1.0"
+dependencies = [
+    "gradio",
+    "requests",
+    "pandas",
+    "spaces"
+]
