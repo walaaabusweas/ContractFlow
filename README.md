@@ -55,7 +55,7 @@ Prerequisites
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/ContractFlow-AI.git
+   git clone https://github.com/walaaabusweas/ContractFlow.git
    cd ContractFlow-AI
    ```
 
