@@ -76,14 +76,16 @@ def qwen_chat_completion(
 
     api_key = os.getenv("HF_TOKEN")
     model_name = "Qwen/Qwen2.5-7B-Instruct"
-    client = InferenceClient(model=model_name, token=api_key)
+    client = InferenceClient(token=api_key)
 
     try:
         response = client.chat_completion(
+            model=model_name,
             messages=messages,
             temperature=temperature if temperature > 0 else 0.1,
             max_tokens=max_tokens,
-            stream=False
+            stream=False,
+            provider="featherless"
         )
 
         if hasattr(response, 'usage') and response.usage:
