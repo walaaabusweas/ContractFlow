@@ -61,7 +61,6 @@ def get_embedding(text: str, state: dict = None, **kwargs) -> List[float]:
 
 
 
-
 @traceable(name="qwen_chat_completion", run_type="llm")
 def qwen_chat_completion(
     messages: List[Dict[str, str]],
@@ -71,21 +70,25 @@ def qwen_chat_completion(
     response_format: Optional[Dict[str, Any]] = None,
 ) -> str:
     # ⚡ Lazy Imports داخل الدالة لمنع تباطؤ إقلاع Lambda
-    from huggingface_hub import InferenceClient
+    from openai import OpenAI
     from utils.decorators import record_model_usage
 
     api_key = os.getenv("HF_TOKEN")
     model_name = "Qwen/Qwen2.5-7B-Instruct"
-    client = InferenceClient(token=api_key)
+    
+    # استخدام OpenAI client الموجه لـ Hugging Face Inference Endpoint
+    client = OpenAI(
+        base_url="https://api-inference.huggingface.co/v1/",
+        api_key=api_key,
+    )
 
     try:
-        response = client.chat_completion(
+        response = client.chat.completions.create(
             model=model_name,
             messages=messages,
             temperature=temperature if temperature > 0 else 0.1,
             max_tokens=max_tokens,
-            stream=False,
-            provider="featherless"
+            stream=False
         )
 
         if hasattr(response, 'usage') and response.usage:
