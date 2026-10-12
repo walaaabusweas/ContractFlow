@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Optional
 from openai import OpenAI
 from dotenv import load_dotenv
 from langsmith import traceable
+from utils.decorators import record_model_usage
 
 # ---------------------------------------------------------
 # إعداد متغيرات البيئة
