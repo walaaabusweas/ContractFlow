@@ -69,18 +69,11 @@ def qwen_chat_completion(
     max_tokens: int = 2500,
     response_format: Optional[Dict[str, Any]] = None,
 ) -> str:
-    # ⚡ Lazy Imports داخل الدالة لمنع تباطؤ إقلاع Lambda
-    from openai import OpenAI
-    from utils.decorators import record_model_usage
-
-    api_key = os.getenv("HF_TOKEN")
-    model_name = "Qwen/Qwen2.5-7B-Instruct"
+    # استخدام مفتاح OpenAI وزيادة الاستقرار
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
-    # استخدام OpenAI client الموجه لـ Hugging Face Inference Endpoint
-    client = OpenAI(
-        base_url="https://api-inference.huggingface.co/v1/",
-        api_key=api_key,
-    )
+    # استخدام نموذج قوي وسريع مثل gpt-4o-mini أو gpt-4o
+    model_name = "gpt-4o-mini" 
 
     try:
         response = client.chat.completions.create(
@@ -88,7 +81,6 @@ def qwen_chat_completion(
             messages=messages,
             temperature=temperature if temperature > 0 else 0.1,
             max_tokens=max_tokens,
-            stream=False
         )
 
         if hasattr(response, 'usage') and response.usage:
@@ -97,21 +89,8 @@ def qwen_chat_completion(
                 output_tokens=response.usage.completion_tokens
             )
 
-            try:
-                from langsmith.run_helpers import get_current_run_tree
-                run_tree = get_current_run_tree()
-                if run_tree:
-                    run_tree.extra["metadata"] = {
-                        "input_tokens": response.usage.prompt_tokens,
-                        "output_tokens": response.usage.completion_tokens,
-                        "total_tokens": response.usage.total_tokens
-                    }
-                    run_tree.patch()
-            except Exception:
-                pass
-
         return response.choices[0].message.content.strip()
 
     except Exception as e:
-        print(f"❌ Error during Hugging Face Inference: {e}")
-        raise RuntimeError(f"Hugging Face API Execution failed: {str(e)}") from e
+        print(f"❌ Error during OpenAI API Execution: {e}")
+        raise RuntimeError(f"OpenAI API Execution failed: {str(e)}") from e
