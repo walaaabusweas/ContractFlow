@@ -3,7 +3,7 @@ import shutil
 import tarfile
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-
+from openai import OpenAI
 from dotenv import load_dotenv
 from langsmith import traceable
 
